@@ -575,3 +575,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,linux,vim,emacs,visualstudiocode,pycharm,pycharm+iml,pycharm+all,jupyternotebooks,macos,windows
+
+
+#DTU HPC
+submit.sh
