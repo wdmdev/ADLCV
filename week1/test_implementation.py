@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
-from transformer import Attention, PositionalEncoding, TransformerClassifier
+from transformer import Attention, PositionalEncoding, TransformerClassifier, PositionalEmbedding
 
 
 def test_attention(batch_size=16, seq_len=512, embed_dim=128, device='cpu'):
@@ -40,11 +40,12 @@ def test_positional_encoding(embed_dim=128, max_seq_len=512):
     plt.figure(figsize=(10, 6))
 
     # positional encoding for a embed_dim-dimensional vector 
-    pe = PositionalEncoding(embed_dim=embed_dim, max_seq_len=max_seq_len)
+    # pe = PositionalEncoding(embed_dim=embed_dim, max_seq_len=max_seq_len)
+    pe = PositionalEmbedding(embed_dim=embed_dim, max_seq_len=max_seq_len)
 
     # token input: batch_size x sequence_length x embed_dim
     token = torch.zeros(1, max_seq_len, embed_dim)
-    positions = pe(token)
+    positions = pe(token).detach().numpy()
 
     # Each row in the plot corresponds to the vector we are adding 
     # to our embedding vector when the word is at that position in the sentence
@@ -52,7 +53,7 @@ def test_positional_encoding(embed_dim=128, max_seq_len=512):
     plt.xlabel('Dimension')
     plt.ylabel('Position in the sequence')
     plt.gca().invert_yaxis()
-    plt.show()
+    plt.savefig('positional_embedding.png')
 
     
 if __name__ == '__main__':

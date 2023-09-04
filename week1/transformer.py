@@ -105,13 +105,14 @@ class PositionalEmbedding(nn.Module):
 
         super(PositionalEmbedding, self).__init__()
         # My implemntation learnable positional embedding
-        self.positional_embedding = nn.Embedding(max_seq_len, embed_dim)
+        self.pe = nn.Embedding(max_seq_len, embed_dim)
         
 
     def forward(self, x):
         batch_size, seq_length, embed_dim = x.size()
         # My implemntation
-        x = x + self.positional_embedding(torch.arange(seq_length).to(to_device(x)).repeat(batch_size, 1))
+        pos = torch.arange(0, x.size(1)).unsqueeze(0).repeat(batch_size, 1).to(x.device)
+        x = x + self.pe(pos)
         return x
         
         
@@ -124,6 +125,8 @@ class TransformerClassifier(nn.Module):
                  
     ):
         super().__init__()
+        self.max_seq_len = max_seq_len
+        self.embed_dim = embed_dim
 
         assert pool in ['cls', 'mean', 'max']
         assert pos_enc in ['fixed', 'learnable']
@@ -134,9 +137,9 @@ class TransformerClassifier(nn.Module):
 
         #My implementation
         # Initialize cls token parameter
-        if self.pool == 'cls':
-            self.positional_encoding = nn.Parameter(torch.zeros(1, 1, embed_dim))
-        
+        # if self.pool == 'cls':
+        #     self.cls_positional_encoding = nn.Parameter(torch.zeros(1, 1, embed_dim))
+
         if self.pos_enc == 'fixed':
             self.positional_encoding = PositionalEncoding(embed_dim=embed_dim, max_seq_len=max_seq_len)
         elif self.pos_enc == 'learnable':
@@ -158,9 +161,9 @@ class TransformerClassifier(nn.Module):
 
         #My implementation
         # Include cls token in the input sequence
-        if self.pool == 'cls':
-            cls_token = repeat(self.positional_encoding, '() n d -> b n d', b=batch_size)
-            tokens = torch.cat((cls_token, tokens), dim=1)
+        # if self.pool == 'cls':
+        #     cls_token = repeat(self.cls_positional_encoding, '() n d -> b n d', b=batch_size)
+        #     tokens = torch.cat((cls_token, tokens), dim=1)
 
         x = self.positional_encoding(tokens)
         x = self.dropout(x)

@@ -579,3 +579,9 @@ $RECYCLE.BIN/
 
 #DTU HPC
 submit.sh
+*.csv
+**/.data/
+*.png
+*.jpg
+**/plots/
+**/heat_maps/
