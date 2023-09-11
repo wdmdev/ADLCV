@@ -44,7 +44,6 @@ class Attention(nn.Module):
         values = rearrange(values, 'b s (h d) -> (b h) s d', h=self.num_heads, d=self.head_dim)
 
         attention_logits = torch.matmul(queries, keys.transpose(1, 2))
-        self.attention_logits = attention_logits * self.scale
         attention = F.softmax(attention_logits, dim=-1)
         out = torch.matmul(attention, values)
 

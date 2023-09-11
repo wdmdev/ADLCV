@@ -122,5 +122,5 @@ if __name__ == "__main__":
     print(f"Model will run on {device}")
     set_seed(seed=1)
     model = main(num_heads=16)
-    model_name = 'model1'
+    model_name = 'model2'
     torch.save(model, f'models/{model_name}.pt')

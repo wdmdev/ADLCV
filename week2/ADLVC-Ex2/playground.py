@@ -9,6 +9,7 @@ import torchvision.transforms as transforms
 from imageclassification import prepare_dataloaders, set_seed
 from vit import ViT, positional_encoding_2d
 
+
 def image_to_patches(image, patch_size, image_grid=True):
     """
         image : torch.Tensor of shape B x C x H x W
