@@ -58,11 +58,11 @@ if __name__ == "__main__":
                                         normalize=True, pad_value=0.9
     )
     img_grid = img_grid.permute(1, 2, 0)
-    plt.figure(figsize=(8,8))
     plt.title("Image examples from CIFAR10 dataset")
     plt.imshow(img_grid)
     plt.axis('off')
-    plt.show()
+    plt.tight_layout()
+    plt.savefig('cifar10_examples.png')
 
     # convert images to patches
     img_patches = image_to_patches(example_images, patch_size=(4,4), image_grid=True)
@@ -109,4 +109,3 @@ if __name__ == "__main__":
 
     plt.subplots_adjust(wspace=0.5, hspace=0.5)
     plt.savefig('pos_embeddings_2.png', bbox_inches='tight', pad_inches=0)
-    plt.show()

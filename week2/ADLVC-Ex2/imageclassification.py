@@ -11,6 +11,9 @@ import torchvision
 import torchvision.transforms as transforms
 from vit import ViT
 
+import plotly.express as px
+import pandas as pd
+
 def set_seed(seed=1):
     random.seed(seed)
     np.random.seed(seed)
@@ -84,22 +87,31 @@ def main(image_size=(32,32), patch_size=(4,4), channels=3,
     opt = torch.optim.AdamW(lr=lr, params=model.parameters(), weight_decay=weight_decay)
     sch = torch.optim.lr_scheduler.LambdaLR(opt, lambda i: min(i / warmup_steps, 1.0))
 
+    #save model results
+    results = {'train_loss': [], 'val_acc': []}
+
     # training loop
     for e in range(num_epochs):
         print(f'\n epoch {e}')
         model.train()
+        train_losses = []
         for image, label in tqdm.tqdm(train_iter):
             if torch.cuda.is_available():
                 image, label = image.to('cuda'), label.to('cuda')
             opt.zero_grad()
             out = model(image)
             loss = loss_function(out, label)
+            #save train loss
+            train_losses.append(loss.item())
             loss.backward()
             # if the total gradient vector has a length > 1, we clip it back down to 1.
             if gradient_clipping > 0.0:
                 nn.utils.clip_grad_norm_(model.parameters(), gradient_clipping)
             opt.step()
             sch.step()
+        
+        #save train loss
+        results['train_loss'].append(np.mean(train_losses))
 
         with torch.no_grad():
             model.eval()
@@ -111,9 +123,11 @@ def main(image_size=(32,32), patch_size=(4,4), channels=3,
                 tot += float(image.size(0))
                 cor += float((label == out).sum().item())
             acc = cor / tot
+            #save validation accuracy
+            results['val_acc'].append(acc)
             print(f'-- {"validation"} accuracy {acc:.3}')
     
-    return model
+    return model, results
 
 
 if __name__ == "__main__":
@@ -121,6 +135,16 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  
     print(f"Model will run on {device}")
     set_seed(seed=1)
-    model = main(num_heads=16)
-    model_name = 'model2'
+    model, results = main(embed_dim=256, num_heads=8, patch_size=(4,4))
+    model_name = 'model_patch_4'
     torch.save(model, f'models/{model_name}.pt')
+
+    #plot and save results using plotly express as .png
+    df = pd.DataFrame(results)
+    df['epoch'] = df.index
+    df = df.melt(id_vars=['epoch'], value_vars=['train_loss', 'val_acc'],
+                    var_name='metric', value_name='value')
+    fig = px.line(df, x='epoch', y='value', color='metric', title=f'{model_name}')
+    fig.write_image(f'plots/{model_name}.png')
+
+
