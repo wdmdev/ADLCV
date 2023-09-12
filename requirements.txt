@@ -9,3 +9,4 @@ six
 pandas
 plotly-express
 torchvision
+tensorboard
