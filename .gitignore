@@ -588,3 +588,8 @@ submit.sh
 **/data
 **/models
 **/img/
+**/assets/
+**/results/
+**/runs/
+**/dataset/
+**/runs/
