@@ -585,7 +585,7 @@ submit.sh
 *.jpg
 **/plots/
 **/heat_maps/
-**/data
+**/data/
 **/models
 **/img/
 **/assets/
@@ -593,3 +593,6 @@ submit.sh
 **/runs/
 **/dataset/
 **/runs/
+**/rendered_videos/
+*.err
+*.out

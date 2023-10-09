@@ -10,3 +10,7 @@ pandas
 plotly-express
 torchvision
 tensorboard
+opencv-python
+pyyaml
+imageio
+gdown

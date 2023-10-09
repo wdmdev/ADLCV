@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     ################## Diffusion class ##################
     # TASK 1: Implement beta, alpha, and alpha_hat 
-    diffusion = Diffusion(device=device)
+    diffusion = Diffusion(device=device, scheduling='cosine')
     plt.figure()
     plt.plot(range(1,diffusion.T+1), diffusion.alphas.cpu().numpy(), label='alphas', linewidth=3)
     plt.plot(range(1,diffusion.T+1), diffusion.alphas_bar.cpu().numpy(), label='alphas_bar',linewidth=3)

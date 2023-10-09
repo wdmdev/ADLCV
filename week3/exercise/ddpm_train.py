@@ -59,14 +59,14 @@ def create_result_folders(experiment_name):
     os.makedirs(os.path.join("results", experiment_name), exist_ok=True)
 
 def train(device='cpu', T=500, img_size=16, input_channels=3, channels=32, time_dim=256,
-          batch_size=100, lr=1e-3, num_epochs=30, experiment_name="ddpm", show=False):
+          batch_size=100, lr=1e-3, num_epochs=30, model_scheduling='linear', experiment_name="ddpm", show=False):
     """Implements algrorithm 1 (Training) from the ddpm paper at page 4"""
     create_result_folders(experiment_name)
     dataloader = prepare_dataloader(batch_size)
 
     model = UNet(img_size=img_size, c_in=input_channels, c_out=input_channels, 
                  time_dim=time_dim,channels=channels, device=device).to(device)
-    diffusion = Diffusion(img_size=img_size, T=T, beta_start=1e-4, beta_end=0.02, device=device)
+    diffusion = Diffusion(img_size=img_size, T=T, beta_start=1e-4, beta_end=0.02, scheduling=model_scheduling, device=device)
 
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     mse = torch.nn.MSELoss() # use MSE loss 
@@ -106,7 +106,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  
     print(f"Model will run on {device}")
     set_seed(seed=SEED)
-    train(device=device)
+    train(experiment_name='cosine2', model_scheduling='cosine', device=device)
 
 if __name__ == '__main__':
     main()

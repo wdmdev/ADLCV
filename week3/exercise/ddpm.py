@@ -5,7 +5,7 @@ logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=log
 
 
 class Diffusion:
-    def __init__(self, T=500, beta_start=1e-4, beta_end=0.02, img_size=16, device="cuda"):
+    def __init__(self, T=500, beta_start=1e-4, beta_end=0.02, img_size=16, scheduling='linear', device="cuda"):
         """
         T : total diffusion steps (X_T is pure noise N(0,1))
         beta_start: value of beta for t=0
@@ -17,21 +17,31 @@ class Diffusion:
         self.beta_end = beta_end
         self.img_size = img_size
         self.device = device
-        
-        # TASK 1: Implement beta, alpha, and alpha_bar
-        self.betas = self.get_betas('linear').to(device)
+
+
+        self.betas = self.get_betas(scheduling).to(device)
         self.alphas = 1. - self.betas
         self.alphas_bar = torch.cumprod(self.alphas, dim=0) # cumulative products of alpha 
 
 
+    # TASK 1
     def get_betas(self, schedule='linear'):
         if schedule == 'linear':
-            #My code below: Creating linear schedule for beta
+            # Linear schedule
             return torch.linspace(self.beta_start, self.beta_end, self.T) 
-        # add your own (e.g. cosine)
-        else :
+        elif schedule == 'cosine':
+            # Cosine schedule
+            s = 0.008
+            t = torch.linspace(0, self.T, self.T+1).to(self.device) / self.T
+            # f = lambda t: (torch.cos((torch.pi / 2) * ((t + s) / (1 + 2 * s))))**2
+            f = lambda t: (torch.cos((t+s)/(1+2*s) * torch.pi/2))**2
+            alpha = f(t)/f(torch.zeros_like(t))
+            beta = 1. - alpha[1:] / alpha[:-1]
+            beta = torch.clamp(beta, 0.0, 0.999)
+            return beta
+        else:
             raise NotImplementedError('Not implemented!')
-    
+
 
     def q_sample(self, x, t):
         """
@@ -50,7 +60,7 @@ class Diffusion:
         sqrt_one_minus_alpha_bar = torch.sqrt(1-self.alphas_bar[t])
         sqrt_one_minus_alpha_bar = sqrt_one_minus_alpha_bar[:, None, None, None]# match image dimensions
         
-        noise = torch.rand_like(x) #Sample noise from a normal distribution in shape of x 
+        noise = torch.randn_like(x) #Sample noise from a normal distribution in shape of x 
         assert noise.shape == x.shape, 'Invalid shape of noise'
         
         x_noised = sqrt_alpha_bar * x + sqrt_one_minus_alpha_bar * noise # create the noisy version of x         
