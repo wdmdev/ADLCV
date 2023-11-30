@@ -135,10 +135,9 @@ class TransformerClassifier(nn.Module):
         self.pool, self.pos_enc, = pool, pos_enc
         self.token_embedding = nn.Embedding(embedding_dim=embed_dim, num_embeddings=num_tokens)
 
-        #My implementation
         # Initialize cls token parameter
-        # if self.pool == 'cls':
-        #     self.cls_positional_encoding = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        if self.pool == 'cls':
+            self.cls_positional_encoding = nn.Parameter(torch.zeros(1, 1, embed_dim))
 
         if self.pos_enc == 'fixed':
             self.positional_encoding = PositionalEncoding(embed_dim=embed_dim, max_seq_len=max_seq_len)
@@ -159,11 +158,10 @@ class TransformerClassifier(nn.Module):
         tokens = self.token_embedding(x)
         batch_size, seq_length, embed_dim = tokens.size()
 
-        #My implementation
         # Include cls token in the input sequence
-        # if self.pool == 'cls':
-        #     cls_token = repeat(self.cls_positional_encoding, '() n d -> b n d', b=batch_size)
-        #     tokens = torch.cat((cls_token, tokens), dim=1)
+        if self.pool == 'cls':
+            cls_token = repeat(self.cls_positional_encoding, '() n d -> b n d', b=batch_size)
+            tokens = torch.cat((cls_token, tokens), dim=1) 
 
         x = self.positional_encoding(tokens)
         x = self.dropout(x)
@@ -173,5 +171,7 @@ class TransformerClassifier(nn.Module):
             x = x.max(dim=1)[0]
         elif self.pool =='mean':
             x = x.mean(dim=1)
+        elif self.pool == 'cls':
+            x = x[:, 0, :]
             
         return self.classifier(x)
